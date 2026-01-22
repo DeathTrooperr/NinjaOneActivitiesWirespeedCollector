@@ -18,4 +18,5 @@ new_classes = ["CollectorDO"]
 
 [vars]
 TEST_MODE = "true"
+PARSE_OCSF = "false"
 # NINJA_CLIENT_ID, NINJA_CLIENT_SECRET, WIRESPEED_WEBHOOK_URL should be set via secrets

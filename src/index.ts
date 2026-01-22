@@ -134,25 +134,7 @@ export class CollectorDO implements DurableObject {
     let payload: any = activity;
 
     if (this.env.PARSE_OCSF === 'true') {
-      // Basic OCSF-like mapping (Security Finding/Event)
-      // Note: Full OCSF mapping would be much more extensive
-      payload = {
-        metadata: {
-          version: '1.1.0',
-          product: {
-            name: 'NinjaOne',
-            vendor_name: 'NinjaOne',
-          },
-        },
-        severity: activity.severity,
-        status: activity.status,
-        activity_id: activity.id,
-        time: activity.activityTime,
-        message: activity.message,
-        type_name: activity.type,
-        category_name: 'System Activity',
-        raw_data: JSON.stringify(activity),
-      };
+      // Implement
     }
 
     if (this.env.TEST_MODE === 'true') {
