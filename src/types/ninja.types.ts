@@ -4,6 +4,7 @@ export interface Env {
   NINJA_CLIENT_SECRET: string;
   WIRESPEED_WEBHOOK_URL: string;
   TEST_MODE?: string;
+  PARSE_OCSF?: string;
   COLLECTOR_DO: DurableObjectNamespace;
 }
 

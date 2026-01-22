@@ -6,7 +6,6 @@ export default {
     if (url.pathname === '/init') {
       const id = env.COLLECTOR_DO.idFromName('singleton');
       const obj = env.COLLECTOR_DO.get(id);
-      // We use fetch to trigger the init logic in the DO
       return await obj.fetch(request);
     }
     return new Response('Not found', { status: 404 });
@@ -22,6 +21,10 @@ export class CollectorDO implements DurableObject {
   async fetch(request: Request) {
     const url = new URL(request.url);
     if (url.pathname === '/init') {
+      const initialized = await this.state.storage.get<boolean>('initialized');
+      if (initialized) {
+        return new Response('Collector already initialized', { status: 200 });
+      }
       await this.collectLogs(true);
       return new Response('Collector initialized');
     }
@@ -83,9 +86,13 @@ export class CollectorDO implements DurableObject {
           console.log(`Updated lastActivityId to ${newLastId}`);
         }
       } else if (data.lastActivityId && !init) {
-          // If no activities but the response gives us a lastActivityId, we might want to update?
-          // The docs say lastActivityId is "Last recorded activity ID for account". 
-          // If we got 0 activities with newerThan, our lastActivityId is already up to date with what we've processed.
+          // If no activities, we do NOT update lastActivityId to ensure it stays the same
+          console.log(`No new activities. lastActivityId remains ${await this.state.storage.get<number>('lastActivityId')}`);
+      }
+
+      // Mark as initialized if this was an init call
+      if (init) {
+        await this.state.storage.put('initialized', true);
       }
 
       // Schedule next run 60 seconds from the end of execution
@@ -95,7 +102,6 @@ export class CollectorDO implements DurableObject {
 
     } catch (error) {
       console.error('Error in collectLogs:', error);
-      // Even on error, retry in 60 seconds?
       await this.state.storage.setAlarm(Date.now() + 60 * 1000);
     }
   }
@@ -125,8 +131,32 @@ export class CollectorDO implements DurableObject {
   }
 
   private async postToWirespeed(activity: Activity) {
+    let payload: any = activity;
+
+    if (this.env.PARSE_OCSF === 'true') {
+      // Basic OCSF-like mapping (Security Finding/Event)
+      // Note: Full OCSF mapping would be much more extensive
+      payload = {
+        metadata: {
+          version: '1.1.0',
+          product: {
+            name: 'NinjaOne',
+            vendor_name: 'NinjaOne',
+          },
+        },
+        severity: activity.severity,
+        status: activity.status,
+        activity_id: activity.id,
+        time: activity.activityTime,
+        message: activity.message,
+        type_name: activity.type,
+        category_name: 'System Activity',
+        raw_data: JSON.stringify(activity),
+      };
+    }
+
     if (this.env.TEST_MODE === 'true') {
-      console.log(`[TEST_MODE] Would post activity ${activity.id} to Wirespeed:`, JSON.stringify(activity, null, 2));
+      console.log(`[TEST_MODE] Would post activity ${activity.id} to Wirespeed:`, JSON.stringify(payload, null, 2));
       return;
     }
 
@@ -135,7 +165,7 @@ export class CollectorDO implements DurableObject {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(activity),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
