@@ -1,0 +1,21 @@
+name = "ninja-collector"
+main = "src/index.ts"
+compatibility_date = "2024-04-03"
+
+[observability]
+enabled = true
+
+[dev]
+routes = false
+
+[[durable_objects.bindings]]
+name = "COLLECTOR_DO"
+class_name = "CollectorDO"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["CollectorDO"]
+
+[vars]
+TEST_MODE = "true"
+# NINJA_CLIENT_ID, NINJA_CLIENT_SECRET, WIRESPEED_WEBHOOK_URL should be set via secrets

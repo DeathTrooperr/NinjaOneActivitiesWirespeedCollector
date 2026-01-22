@@ -1,0 +1,26 @@
+{
+  "name": "ninjaoneactivitieswirespeedcollector",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeathTrooperr/NinjaOneActivitiesWirespeedCollector.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DeathTrooperr/NinjaOneActivitiesWirespeedCollector/issues"
+  },
+  "homepage": "https://github.com/DeathTrooperr/NinjaOneActivitiesWirespeedCollector#readme",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260122.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.60.0"
+  }
+}
